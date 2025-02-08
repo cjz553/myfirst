@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="team02.mapper.User02Mapper">
+
+    <!-- 查询用户 -->
+    <select id="getUserByAll" resultType="team02.pojo.User02">
+        SELECT * FROM people;
+    </select>
+<!--    通过学号查询学生-->
+    <select id="getUserByStudentId" resultType="team02.pojo.User02">
+        SELECT * FROM people WHERE student_id = #{student_id}
+    </select>
+    <select id="FindPeopleByphone" resultType="team02.pojo.User02">
+        select * from people where phone=#{phone}
+    </select>
+    <select id="AdminPeopleBatterylist" resultType="team02.relation.PeopleBattery">
+        select * from people_battery ORDER BY pay_battery_time DESC
+    </select>
+    <select id="AdminPeopleCdzlist" resultType="team02.relation.PeopleCdz">
+        select * from people_cdz ORDER BY pay_cdz_time DESC
+    </select>
+    <select id="AdminPeopleBatterylistByKey" resultType="team02.relation.PeopleBattery">
+        select * from people_battery where battery_id like CONCAT ('%',#{search_input},'%')
+        or phone like CONCAT ('%',#{search_input},'%')
+        or battery_pay_zt like CONCAT ('%',#{search_input},'%') ORDER BY pay_battery_time DESC
+    </select>
+    <select id="AdminPeopleCdzlistByKey" resultType="team02.relation.PeopleCdz">
+        select * from people_cdz where cdz_id like CONCAT ('%',#{search_input},'%')
+        or phone like CONCAT ('%',#{search_input},'%')
+        or cdz_pay_zt like CONCAT ('%',#{search_input},'%') ORDER BY pay_cdz_time DESC
+    </select>
+    <select id="AdminPeoplelist" resultType="team02.pojo.User02">
+        select * from people
+    </select>
+    <select id="AdminPeoplelistByKey" resultType="team02.pojo.User02">
+        select * from people
+        where id like CONCAT ('%',#{search_input},'%')
+        or name like CONCAT ('%',#{search_input},'%')
+        or phone like CONCAT ('%',#{search_input},'%')
+        or student_id like CONCAT ('%',#{search_input},'%')
+        or grade like CONCAT ('%',#{search_input},'%')
+        or profession like CONCAT ('%',#{search_input},'%')
+        or school like CONCAT ('%',#{search_input},'%')
+    </select>
+
+    <insert id="addUser" parameterType="team02.pojo.User02">
+        INSERT INTO people (id, name, phone, student_id, grade, profession, school, password)
+        VALUES (#{id}, #{name}, #{phone}, #{student_id}, #{grade}, #{profession}, #{school}, #{password})
+    </insert>
+
+
+    <!-- 更新用户信息 -->
+    <update id="updateUser" parameterType="team02.pojo.User02">
+        UPDATE people SET name=#{name}, phone=#{phone}, student_id=#{student_id},
+        grade=#{grade}, profession=#{profession}, school=#{school}
+        WHERE id = #{id}
+    </update>
+<!--    用户修改密码-->
+    <update id="updatepassword">
+        update people set password=#{password} where id=#{id}
+    </update>
+    <update id="updateUserBalance">
+        update people set accounts = accounts + #{amount} where id=#{id}
+    </update>
+    <update id="AdminUpdateBlack">
+        update people set zt=#{zt} where id=#{id}
+    </update>
+
+    <!-- 删除用户 -->
+    <delete id="deleteUser" parameterType="String">
+        DELETE FROM people WHERE id = #{id}
+    </delete>
+
+</mapper>

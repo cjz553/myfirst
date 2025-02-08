@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="team02.mapper.CupboardMapper">
+    <insert id="addbattery_cupboard">
+        insert into battery_cupboard(cupboard_id, battery_id) values (#{cupboard_id}, #{battery_id})
+    </insert>
+    <insert id="AddCupboard">
+        insert into cupboard(cupboard_id, cupboard_frequency, last_repair_cupboard, cupboard_hold, lo, la)
+        values (#{cupboard_id},#{cupboard_frequency}, #{last_repair_cupboard}, #{cupboard_hold}, #{lo}, #{la})
+    </insert>
+    <update id="reducecount">
+        update cupboard set count =count -1 where cupboard_id=#{cupboard_id}
+    </update>
+    <update id="updatecupboardcount">
+        update cupboard set count=count+1 where cupboard_id=#{cupboard_id}
+    </update>
+    <delete id="DeleteCupboard">
+        delete from cupboard where cupboard_id=#{cupboard_id}
+    </delete>
+    <delete id="DeleteCupboardAndBattery">
+        delete from battery where
+        battery_id=(select battery_id from cupboard c inner join battery_cupboard bc
+        on c.cupboard_id=bc.cupboard_id where c.cupboard_id=#{cupboard_id})
+    </delete>
+    <delete id="DeleteCupboardAndBatteryRelation">
+        delete from battery_cupboard where cupboard_id=#{cupboard_id}
+    </delete>
+
+    <select id="getAllCupboards" resultType="team02.pojo.Cupboard">
+        select * from cupboard ORDER BY cupboard_registration DESC
+    </select>
+    <select id="getAllBatteryCupboard" resultType="team02.relation.BatteryCupboard">
+        select * from battery_cupboard;
+    </select>
+    <select id="getAllBatteryNumber" resultType="team02.relation.CupboardBatteryNumber">
+        select cupboard_id, count(*) as count from battery_cupboard group by cupboard_id
+    </select>
+    <select id="getBatteryCupboardByCupboard_id" resultType="team02.relation.BatteryCupboard">
+         select * from battery_cupboard where cupboard_id=#{cupboard_id}
+    </select>
+    <select id="CupboardkjNumber" resultType="team02.pojo.Cupboard">
+        select * from cupboard where cupboard_hold=count and cupboard_id=#{cupboard_id}
+    </select>
+    <select id="IfHaveBattery" resultType="team02.relation.CarPeople">
+        select b.cph, b.battery_id, b.carry_begin_time
+        from car_people cp inner join car_battery1 b on cp.cph = b.cph
+        where cp.phone=#{phone} and b.battery_id=#{battery_id} ORDER BY b.carry_begin_time DESC
+    </select>
+    <select id="AdminCupboardlist" resultType="team02.pojo.Cupboard">
+        select * from cupboard ORDER BY cupboard_registration DESC
+    </select>
+    <select id="AdminSearchCupboardlist" resultType="team02.pojo.Cupboard">
+        select * from cupboard
+        where cupboard_id like CONCAT ('%',#{search_input},'%')
+    </select>
+    <select id="getCupboardByID" resultType="team02.pojo.Cupboard">
+        select * from cupboard where cupboard_id=#{cupboard_id}
+    </select>
+
+
+</mapper>

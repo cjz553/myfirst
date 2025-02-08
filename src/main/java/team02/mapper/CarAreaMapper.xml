@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="team02.mapper.CarAreaMapper">
+    <insert id="addAreaCar2">
+        insert into area_car2(car_area_id, cph, la, lo, phone) values (#{car_area_id}, #{cph}, #{la}, #{lo}, #{phone})
+    </insert>
+    <insert id="addAreaCar">
+        insert into area_car(cph, la, lo,wt ,car_area_id, phone) values (#{cph}, #{la}, #{lo},#{wt}, #{car_area_id}, #{phone})
+    </insert>
+    <insert id="AddPlace">
+        insert into car_area(car_area_id, car_area_name, audit, certificate, remain, range_sw_lon, range_sw_lat, range_ne_lon, range_ne_lat,syzt)
+        values (#{car_area_id}, #{car_area_name}, #{audit}, #{certificate}, #{remain}, #{range_sw_lon}, #{range_sw_lat}, #{range_ne_lon}, #{range_ne_lat}, #{syzt})
+    </insert>
+    <update id="RemoveRemain">
+        update car_area set remain = remain-1 where car_area_id=#{car_area_id}
+    </update>
+    <update id="updateAreaCarTime">
+        update area_car set end_time=NOW() where end_time is null and cph=#{cph}
+    </update>
+    <update id="AddRemain">
+        update car_area set remain = remain+1 where car_area_id=#{car_area_id}
+    </update>
+    <update id="deleteAreaCar2" parameterType="String">
+    update area_car2 set zt='deleted' WHERE cph = #{cph} and phone = #{phone}
+   </update>
+
+    <update id="UpdateSyzt">
+        update car_area set syzt=#{syzt} where car_area_id=#{car_area_id}
+    </update>
+
+    <select id="CarAreaslist" resultType="team02.pojo.CarArea">
+    SELECT
+        ca.car_area_id,
+        ca.car_area_name,
+        ca.begin_time,
+        ca.audit,
+        ca.certificate,
+        ca.remain,
+        ca.range_sw_lon,
+        ca.range_sw_lat,
+        ca.range_ne_lat,
+        ca.range_ne_lon,
+        ca.syzt,
+        -- 计算“待使用的数量”
+        -- 这里的 SQL 可能需要你计算“待使用的数量”，假设是通过某些字段计算出来
+        count(*) AS cdz_count
+    FROM
+        car_area ca
+    INNER JOIN
+        area_cdz ac ON ca.car_area_id = ac.car_area_id
+    INNER JOIN
+        cdz ON cdz.cdz_id = ac.cdz_id
+    WHERE
+        cdz.zt = '空闲' and ca.syzt='启用'
+GROUP BY car_area_id
+</select>
+
+    <select id="AdminCarAreaslist" resultType="team02.pojo.CarArea">
+    SELECT
+       * from car_area ORDER BY begin_time DESC
+</select>
+
+
+    <select id="AreaCarlistByPhone" resultType="team02.relation.AreaCar2">
+        select * from area_car2 where phone=#{phone} and zt='ok' ORDER BY cf_time DESC
+    </select>
+    <select id="SelectillegalReport" resultType="team02.relation.AreaCar">
+        select * from area_car where phone=#{phone} ORDER BY begin_time DESC
+    </select>
+    <select id="FindCarByCPhAndPhone" resultType="team02.relation.CarPeople">
+        select * from car_people where phone=#{phone} and cph=#{cph}
+    </select>
+    <select id="FindCarReportByCPhAndPhone" resultType="team02.relation.AreaCar2">
+        select * from area_car2 where phone=#{phone} and cph=#{cph} and zt='ok' ORDER BY cf_time DESC
+    </select>
+    <select id="AdminSearchCarAreaslist" resultType="team02.pojo.CarArea">
+    select * from car_area
+    where car_area_id like CONCAT ('%',#{search_input},'%')
+       OR car_area_name like CONCAT ('%',#{search_input},'%')
+       OR certificate like CONCAT ('%',#{search_input},'%') ORDER BY begin_time DESC
+    </select>
+
+</mapper>

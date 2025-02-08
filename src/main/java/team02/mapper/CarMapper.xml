@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="team02.mapper.CarMapper">
+    <insert id="addCar">
+        insert into car(cph, pp, cjh, cx, zzl, czrs, xh, changes, change_time, begin_id) values
+        (#{cph}, #{pp}, #{cjh},#{cx}, #{zzl}, #{czrs}, #{xh},
+        #{changes}, #{change_time},#{begin_id})
+    </insert>
+
+    <insert id="addCarPeople">
+        insert into car_people(phone, cph) values (#{phone}, #{cph})
+    </insert>
+    <update id="updateBaofei">
+        update car set baofei ='是' where cph=#{cph}
+    </update>
+    <update id="AdminUpdatebaofei">
+        update car set baofei=#{baofei} where cph=#{cph}
+    </update>
+    <delete id="deleteCarPeople">
+        delete from car_people where phone=#{phone} and cph=#{cph}
+    </delete>
+
+    <select id="carlist" resultType="team02.relation.CarPeople">
+    select cp.*
+    from car_people cp
+    join car c on cp.cph = c.cph
+    where cp.phone=#{phone} and c.baofei = '否'
+</select>
+
+    <select id="selectcar" resultType="team02.pojo.Car">
+        select * from car where cph=#{cph}
+    </select>
+    <select id="baofeilist" resultType="team02.relation.CarPeople">
+    select cp.*
+    from car_people cp
+    join car c on cp.cph = c.cph
+    where cp.phone=#{phone} and c.baofei = '是'
+    </select>
+    <select id="FindCarByphone" resultType="team02.pojo.Car">
+        select * from car where baofei='是' and cph=#{cph}
+    </select>
+    <select id="selectcarandpeople" resultType="team02.relation.CarPeople">
+        select * from car_people where cph=#{cph}
+    </select>
+
+    <select id="AdminCarStoplist" resultType="team02.relation.AreaCar2">
+        select * from area_car2 where zt='ok' ORDER BY cf_time DESC
+    </select>
+    <select id="AdminCarWtlist" resultType="team02.relation.AreaCar">
+        select * from area_car ORDER BY begin_time DESC
+    </select>
+    <select id="AdminCarStoplistByKey" resultType="team02.relation.AreaCar2">
+        select * from area_car2
+        where zt='ok' and cph like CONCAT ('%',#{search_input},'%')
+        or car_area_id like CONCAT ('%',#{search_input},'%') ORDER BY cf_time DESC
+    </select>
+    <select id="AdminCarWtlistByKey" resultType="team02.relation.AreaCar">
+        select * from area_car where cph like CONCAT ('%',#{search_input},'%')
+        or car_area_id like CONCAT ('%',#{search_input},'%')
+        or wt like CONCAT ('%',#{search_input},'%') ORDER BY begin_time DESC
+    </select>
+
+    <select id="AdminCarlist" resultType="team02.pojo.Car">
+        select  c.cph, pp, cjh, cx, zzl, czrs, xh, changes, change_time, car_gistration, begin_id, cp.phone, baofei
+        from car c inner join car_people cp on c.cph = cp.cph
+    </select>
+    <select id="AdminCarlistByKey" resultType="team02.pojo.Car">
+        select  c.cph, pp, cjh, cx, zzl, czrs, xh, changes, change_time, car_gistration, begin_id, cp.phone, baofei
+        from car c inner join car_people cp on c.cph = cp.cph
+        where c.cph like CONCAT ('%',#{search_input},'%')
+        or pp like CONCAT ('%',#{search_input},'%')
+        or phone like CONCAT ('%',#{search_input},'%')
+        or baofei like CONCAT ('%',#{search_input},'%')
+    </select>
+</mapper>

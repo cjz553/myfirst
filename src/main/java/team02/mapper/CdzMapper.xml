@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="team02.mapper.CdzMapper">
+    <insert id="AddCarCdz">
+        insert into car_cdz(cdz_id, cph, phone)values (#{cdz_id}, #{cph}, #{phone})
+    </insert>
+    <insert id="AddPeopleCdz">
+        insert into people_cdz(cdz_id, phone, cdz_pay_zt) values (#{cdz_id}, #{phone}, '充电中')
+    </insert>
+    <insert id="AddPlaceCdzRelation">
+        insert into area_cdz(car_area_id, cdz_id) value (#{car_area_id}, #{cdz_id})
+    </insert>
+    <insert id="AddCdz">
+        insert into cdz(cdz_id, rate, last_repair_pile, pile_repair_frequency) values (#{cdz_id}, #{rate}, #{last_repair_pile}, #{pile_repair_frequency})
+    </insert>
+    <update id="UpdateCdzZt">
+        update cdz set zt='充电中'where cdz_id=#{cdz_id}
+    </update>
+
+
+
+    <update id="UpdateCarCdz">
+      UPDATE car_cdz
+    SET end_cd_time = NOW(),
+    cd_times = TIMESTAMPDIFF(MINUTE, begin_cd_time, CURRENT_TIMESTAMP)
+    WHERE cdz_id = #{cdz_id}  AND cph = #{cph} AND end_cd_time IS NULL AND begin_cd_time IS NOT NULL;
+</update>
+
+
+
+    <update id="UpdatePeopleCdz">
+    update people_cdz
+    set cdz_pay_zt = '未支付',
+        cdz_fy = 0.05 * TIMESTAMPDIFF(MINUTE, pay_cdz_time, CURRENT_TIMESTAMP)
+    where cdz_id = #{cdz_id} and phone = #{phone} and finish is null
+</update>
+
+    <update id="UpdateCdzZt2">
+        update cdz set zt='空闲' where cdz_id=#{cdz_id}
+    </update>
+
+    <update id="ReduceBalance">
+           <![CDATA[
+        update people set accounts=accounts - (select cdz_fy from people_cdz where id=#{id}) where phone=#{phone} and accounts >= (select cdz_fy from people_cdz where id=#{id})
+    ]]>
+    </update>
+
+    <update id="FeeFinsh">
+        update people_cdz set cdz_pay_zt='已支付', finish=NOW() where id=#{id}
+    </update>
+    <delete id="DeleteCarArea">
+        delete from area_cdz where car_area_id=#{car_area_id} and cdz_id=#{cdz_id}
+    </delete>
+    <delete id="DeleteCdzByID">
+        delete from cdz where cdz_id=#{cdz_id}
+    </delete>
+
+    <select id="Cdzlist" resultType="team02.pojo.Cdz">
+        select cdz.cdz_id, cdz.rate, cdz.last_repair_pile,cdz.pile_repair_frequency, cdz.last_repair_pile, cdz.zt
+        from cdz inner join area_cdz ac on cdz.cdz_id = ac.cdz_id where ac.car_area_id=#{car_area_id} and cdz.zt='空闲'
+    </select>
+    <select id="CarCdzReportlist" resultType="team02.relation.CarCdz">
+        select * from car_cdz where phone=#{phone} ORDER BY begin_cd_time DESC
+    </select>
+    <select id="SelectCdzFee" resultType="team02.relation.PeopleCdz">
+        select * from people_cdz where phone=#{phone} ORDER BY pay_cdz_time DESC
+    </select>
+    <select id="FindCarCdByCph" resultType="team02.relation.CarCdz">
+        select * from car_cdz where end_cd_time is null and phone=#{phone} and cph=#{cph}
+    </select>
+    <select id="AdminCdzlist" resultType="team02.pojo.Cdz">
+        select ac.car_area_id, cdz.cdz_id, rate, last_repair_pile, pile_repair_frequency, pile_registration, zt
+        from cdz
+        inner join area_cdz ac on cdz.cdz_id = ac.cdz_id
+    </select>
+    <select id="AdminCdzlistKey" resultType="team02.pojo.Cdz">
+        select ac.car_area_id, cdz.cdz_id, rate, last_repair_pile, pile_repair_frequency, pile_registration, zt
+        from cdz
+        inner join area_cdz ac on cdz.cdz_id = ac.cdz_id
+        where car_area_id like CONCAT ('%',#{search_input},'%')
+        or cdz.cdz_id like CONCAT ('%',#{search_input},'%')
+        or zt like CONCAT ('%',#{search_input},'%')
+    </select>
+    <select id="getCdzByID" resultType="team02.pojo.Cdz">
+        select * from cdz where cdz_id=#{cdz_id}
+    </select>
+    <select id="AdminCdzReport" resultType="team02.relation.CarCdz">
+        select * from car_cdz ORDER BY begin_cd_time DESC
+    </select>
+    <select id="AdminCdzReportByKey" resultType="team02.relation.CarCdz">
+        select * from car_cdz where cdz_id like CONCAT ('%',#{search_input},'%')
+        or cph like CONCAT ('%',#{search_input},'%')
+        or phone like CONCAT ('%',#{search_input},'%')
+        or end_cd_time like CONCAT ('%',#{search_input},'%')
+        or cd_times like CONCAT ('%',#{search_input},'%') ORDER BY begin_cd_time DESC
+    </select>
+</mapper>
